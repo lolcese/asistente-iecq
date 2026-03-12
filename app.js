@@ -194,9 +194,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (examType === "final" && recuperoReg) {
             studentState.condition = "REGULAR";
-            document.getElementById("msg-f2").innerHTML = `<strong>Lograste recuperar la <span class="has-tooltip" data-tooltip="${T_REGULAR}" style="color: #10b981;">REGULARIDAD</span> (aprobaste la parte adeudada).</strong><br>No aprobaste el final completo. Te queda el segundo turno.<br><br>${REGULAR_DEF}`;
+            document.getElementById("msg-f2").innerHTML = `<strong>Lograste recuperar la <span class="has-tooltip" data-tooltip="${T_REGULAR}" style="color: #10b981;">REGULARIDAD</span> (aprobaste la parte adeudada).</strong><br>No aprobaste el final completo. Te queda el segundo examen final.<br><br>${REGULAR_DEF}`;
         } else {
-            document.getElementById("msg-f2").innerHTML = `No aprobaste el primer turno ni recuperaste regularidad.<br><br>${studentState.condition.includes("REGULAR") ? REGULAR_DEF : LIBRE_DEF}`;
+            document.getElementById("msg-f2").innerHTML = `No aprobaste el primer examen final ni recuperaste regularidad.<br><br>${studentState.condition.includes("REGULAR") ? REGULAR_DEF : LIBRE_DEF}`;
         }
     } 
     else {
@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (getRange(studentState.p1) !== "F" && getRange(studentState.p2) !== "F") {
             studentState.condition = "REGULAR";
-            document.getElementById("msg-f2").innerHTML = `No lograste promocionar, pero quedaste <strong class="has-tooltip" data-tooltip="${T_REGULAR}" style="color: #10b981;">REGULAR</strong>. Ahora podés rendir el final en el segundo turno.<br><br>${REGULAR_DEF}`;
+            document.getElementById("msg-f2").innerHTML = `No lograste promocionar, pero quedaste <strong class="has-tooltip" data-tooltip="${T_REGULAR}" style="color: #10b981;">REGULAR</strong>. Ahora podés rendir el final en el segundo examen final.<br><br>${REGULAR_DEF}`;
         } else {
             studentState.condition = "LIBRE";
             document.getElementById("msg-f2").innerHTML = `No lograste la regularidad en el recuperatorio. Seguís <strong class="has-tooltip" data-tooltip="${T_LIBRE}" style="color: #ef4444;">LIBRE</strong>.<br><br>${LIBRE_DEF}`;
@@ -215,14 +215,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     syncAllBadges("f2", studentState.condition, "NO APROBADO", "danger");
-    document.getElementById("label-f2").innerText = "Nota obtenida en Examen Final (2do Turno)";
+    document.getElementById("label-f2").innerText = "Nota obtenida en el segundo examen final";
     showStep("final2");
   });
 
   document.getElementById("btn-calc-final-2").addEventListener("click", () => {
     const nota2 = parseInt(document.getElementById("f2_val").value) || 0;
     if (nota2 >= 4) {
-      showResult("APROBASTE IECQ", studentState.condition, `Aprobaste el segundo turno final (con un 4 o más, equivalente a 14/26+ correctas).<br><br>${APROBADO_DEF}<br><br><strong>Ya no tenés que realizar más trámites de inscripción.</strong>`, "success");
+      showResult("APROBASTE IECQ", studentState.condition, `Aprobaste el segundo examen final (con un 4 o más, equivalente a 14/26+ correctas).<br><br>${APROBADO_DEF}<br><br><strong>Ya no tenés que realizar más trámites de inscripción.</strong>`, "success");
     } else {
       showResult("NO APROBADO", studentState.condition, `No aprobaste IECQ.<br><br>${studentState.condition.includes("REGULAR") ? REGULAR_DEF : LIBRE_DEF}`, "danger");
     }

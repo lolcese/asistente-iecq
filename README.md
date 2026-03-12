@@ -5,7 +5,7 @@ Este es un asistente interactivo diseñado para ayudar a los estudiantes de la m
 ## Características
 
 - **Cálculo de Condición**: Determina si el alumno queda Regular, Libre o Promocionado según las reglas de la cátedra.
-- **Simulación de Exámenes**: Permite cargar notas de recuperatorios y turnos de examen final para ver cómo evoluciona la condición.
+- **Simulación de Exámenes**: Permite cargar notas de recuperatorios y exámenes finales para ver cómo evoluciona la condición.
 - **Reglas de Regularidad**: Implementa la regla del "4" (mínimo un 4 en parciales para recuperar regularidad).
 - **Tooltips Informativos**: Definiciones claras de cada estado académico.
 - **Recordatorios Inteligentes**: Avisos sobre inscripción en SIU-Guaraní dinámicos según el tipo de examen.
