@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const C_RECU_PROM = "un 6 (15/26 respuestas correctas, donde 4 equivale a 12/26)";
   const C_RECU_REG = "6/13 respuestas correctas de la parte correspondiente";
 
-  const LIBRE_DEF = `• <strong style="color: #ef4444;">Condición Libre:</strong> No podés cursar ni rendir las materias de primer año hasta aprobar IECQ.<br><em>El examen final se aprueba con ${C_FINAL}.</em>`;
+  const LIBRE_DEF = `• <strong style="color: #ef4444;">Condición Libre:</strong> No podés cursar ni rendir las materias de primer año hasta aprobar IECQ.`;
   const REGULAR_DEF = `• <strong style="color: #10b981;">Condición Regular:</strong> Podés cursar las materias de primer año, pero NO rendirlas ni promocionarlas hasta aprobar IECQ.<br><em>El examen final se aprueba con ${C_FINAL}.</em>`;
   const APROBADO_DEF = `• Podés cursar, promocionar y rendir las materias de primer año.<br><br><strong>¡Ya podés inscribirte a las materias de primer año!</strong>`;
 
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
     studentState.canRecoverRegularity = hasFourPlus;
 
     if (r1 !== "F" && r2 !== "F" && studentState.p1 >= 6 && studentState.p2 >= 6) {
-      showResult("¡PROMOCIONASTE!", "REGULAR", `¡Excelente desempeño!<br><br>${APROBADO_DEF}`, "success");
+      showResult("¡PROMOCIONASTE!", "REGULAR", `${APROBADO_DEF}`, "success");
       return;
     }
 
@@ -164,14 +164,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (hasSixPlus) {
         studentState.condition = "LIBRE (CON RECUP.)";
         document.getElementById("msg-f1").innerHTML = `<p>Tenés dos opciones para tu primera fecha de examen:<br><br>
-        1. **Recuperatorio de promoción** del parcial ${studentState.failedPart}: para intentar recuperar la regularidad y la promoción (se aprueba con ${C_RECU_PROM}).<br>
-        2. **Examen Final Completo**: para intentar aprobar la materia (se aprueba con ${C_FINAL}) o recuperar la regularidad (se aprueba con ${C_RECU_REG}).</p>`;
+        1. <strong>Recuperatorio de promoción</strong> del parcial ${studentState.failedPart}: para intentar recuperar la regularidad y la promoción. Se recupera la promoción con un 6 (15/26 respuestas correctas) y la regularidad con un 4 (12/26 respuestas correctas).<br>
+        2. <strong>Examen Final Completo</strong>: para intentar recuperar la regularidad y aprobar la materia. Se aprueba con un 4 (14/26 respuestas correctas) y se recupera la regularidad con 6/13 respuestas correctas de la parte correspondiente.</p>`;
       } else {
         studentState.condition = "LIBRE";
         let txt = `<p>${LIBRE_DEF}<br><br>`;
-        if (studentState.canRecoverRegularity) txt += `<strong>Opción de Regularidad:</strong> Al tener al menos un 4+, en tu primera fecha de final podés intentar recuperar la regularidad aprobando con ${C_RECU_REG}.<br><br>`;
-        else txt += `Tu única opción es el examen final completo ya que no contás con parciales aprobados con 4 o más.`;
-        txt += `</p>`;
+        if (studentState.canRecoverRegularity) {
+          txt += `<strong>Opción de Regularidad:</strong> Al tener al menos un 4+ en uno de los parciales, podés intentar recuperar la regularidad en la <strong>primera fecha de final</strong>, aprobando con ${C_RECU_REG}.<br><br>`;
+        } else {
+          txt += `Al no tener ningún parcial con 4 o más, no podés recuperar la regularidad. Tu única opción es el examen final completo.<br><br>`;
+        }
+        txt += `El examen final se aprueba con ${C_FINAL}.</p>`;
         document.getElementById("msg-f1").innerHTML = txt;
       }
     } else {
@@ -200,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (!canRecoverProp || examType === "final") {
       if (nota1 >= 4) {
-        showResult("¡APROBASTE!", studentState.condition.includes("REGULAR") ? "REGULAR" : "LIBRE", `Felicitaciones, aprobaste IECQ.<br><br>${APROBADO_DEF}`, "success");
+        showResult("¡APROBASTE!", studentState.condition.includes("REGULAR") ? "REGULAR" : "LIBRE", `Aprobaste la materia IECQ.<br><br>${APROBADO_DEF}`, "success");
         return;
       }
       if (examType === "final" && recuperoReg) {
@@ -213,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else {
       if (studentState.failedPart === 1) studentState.p1 = nota1; else studentState.p2 = nota1;
       if (getRange(studentState.p1) === "P" && getRange(studentState.p2) === "P") {
-        showResult("¡PROMOCIONASTE!", "REGULAR", `Excelente desempeño. Lograste la promoción.<br><br>${APROBADO_DEF}`, "success");
+        showResult("¡PROMOCIONASTE!", "REGULAR", `Lograste la promoción.<br><br>${APROBADO_DEF}`, "success");
         return;
       }
       if (getRange(studentState.p1) !== "F" && getRange(studentState.p2) !== "F") {
