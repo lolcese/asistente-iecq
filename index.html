@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asistente de Condición IECQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="background-blobs">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+
+    <main class="container">
+      <header class="header">
+        <h1>Asistente IECQ</h1>
+        <p>Calculadora de condición académica</p>
+      </header>
+
+      <div id="status-card" class="glass-card">
+        <div id="wizard-content">
+          <!-- Step 1: Parciales y Asistencia -->
+          <section id="step-parciales" class="step active">
+            <h2>Datos de Cursada</h2>
+            <p class="step-description">
+              Ingresa tu asistencia y las notas de tus parciales (1-10 o 0 para Ausente).
+            </p>
+
+            <div class="input-group">
+               <div class="field" style="grid-column: span 2;">
+                <label for="asistencia">¿Tenés el 80% de asistencia?</label>
+                <select id="asistencia">
+                    <option value="si">Sí, tengo el 80% o más</option>
+                    <option value="no">No llego al 80%</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="p1">Parcial 1</label>
+                <input type="number" id="p1" min="0" max="10" placeholder="Nota 0-10 (0=Ausente)">
+              </div>
+              <div class="field">
+                <label for="p2">Parcial 2</label>
+                <input type="number" id="p2" min="0" max="10" placeholder="Nota 0-10 (0=Ausente)">
+              </div>
+            </div>
+
+            <button id="btn-calc-parciales" class="primary-btn">
+              Evaluar Condición
+            </button>
+          </section>
+
+          <!-- Step 2: Primer Final / Recuperatorio -->
+          <section id="step-final-1" class="step">
+            <div class="status-badges-container" style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+                <div id="badge-cond-f1" class="status-badge">CONDICIÓN</div>
+                <div id="badge-stat-f1" class="status-badge warning">PENDIENTE</div>
+            </div>
+            <h2 id="title-f1">Primer Turno</h2>
+            <p id="msg-f1" class="result-box-small"></p>
+            <div id="reg-reminder-f1" class="result-box-small" style="display: none; border-left: 4px solid var(--warning); background: #fffbeb;"></div>
+            
+            <div id="inputs-f1">
+                <div class="field" id="field-type-f1" style="display: none;">
+                    <label>¿Qué examen rendiste?</label>
+                    <select id="f1_type">
+                        <option value="final">Examen Final Completo</option>
+                        <option value="recuperatorio">Recuperatorio de promoción</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="label-f1" for="f1_val">Nota obtenida</label>
+                    <input type="number" id="f1_val" min="0" max="10" placeholder="Nota 0-10 (0=Ausente)">
+                </div>
+                <div class="field" id="field-recu-reg" style="display: none;">
+                    <label>¿Aprobaste la parte adeudada (6/13 preguntas)?</label>
+                    <select id="f1_recu_reg">
+                        <option value="no">No</option>
+                        <option value="si">Sí</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button id="btn-calc-final-1" class="primary-btn">Cargar Resultado</button>
+          </section>
+
+          <!-- Step 3: Segundo Turno Final -->
+          <section id="step-final-2" class="step">
+            <div class="status-badges-container" style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+                <div id="badge-cond-f2" class="status-badge">CONDICIÓN</div>
+                <div id="badge-stat-f2" class="status-badge danger">NO APROBADO</div>
+            </div>
+            <h2>Segundo Turno de Examen Final</h2>
+            <p id="msg-f2" class="result-box-small"></p>
+            
+            <div class="field">
+                <label id="label-f2" for="f2_val">Nota del examen final</label>
+                <input type="number" id="f2_val" min="0" max="10" placeholder="Nota 0-10 (0=Ausente)">
+            </div>
+            
+            <button id="btn-calc-final-2" class="primary-btn">Cargar Nota</button>
+          </section>
+
+          <!-- Results -->
+          <section id="step-result" class="step">
+            <div class="status-badges-container" style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+                <div id="badge-cond-res" class="status-badge">CONDICIÓN</div>
+                <div id="badge-stat-res" class="status-badge">ESTADO</div>
+            </div>
+            <h2 id="result-title">Resultado</h2>
+            <div id="result-description" class="result-box"></div>
+            <button class="secondary-btn" onclick="location.reload()">
+              Reiniciar
+            </button>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
