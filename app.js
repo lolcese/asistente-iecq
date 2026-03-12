@@ -7,10 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let studentState = {
-    condition: "", // LIBRE, REGULAR, PROMOCIONADO, RECUP_REG, RECUP_PROM, RECUP_BOTH
+    condition: "",
     p1: 0,
     p2: 0,
-    failedPart: 0, // 1 o 2
+    failedPart: 0,
     wasRegularBeforeRecu: false,
     canRecoverPromotion: false,
     canRecoverRegularity: false
@@ -21,49 +21,49 @@ document.addEventListener("DOMContentLoaded", () => {
     steps[stepId].classList.add("active");
   };
 
-  const updateBadge = (elId, text, type, tooltip = "") => {
+  const updateBadge = (elId, text, type) => {
     const badge = document.getElementById(elId);
     if (!badge) return;
     badge.innerText = text;
-    
     badge.classList.remove("success", "danger", "warning");
     if (type === "success") badge.classList.add("success");
     else if (type === "danger") badge.classList.add("danger");
     else if (type === "warning") badge.classList.add("warning");
-
-    if (tooltip) {
-        badge.setAttribute("data-tooltip", tooltip);
-        badge.classList.add("has-tooltip");
-    } else {
-        badge.classList.remove("has-tooltip");
-    }
   };
 
   const syncAllBadges = (stepSuffix, condition, status, statusType) => {
-    const condType = condition.includes("REGULAR") ? "success" : "danger";
-    const condTooltip = condition.includes("REGULAR") ? T_REGULAR : T_LIBRE;
+    const condBadge = document.getElementById(`badge-cond-${stepSuffix}`);
+    const statBadge = document.getElementById(`badge-stat-${stepSuffix}`);
     
-    let statusText = status;
-    if (condition.includes("RECUP") && status === "NO APROBADO") {
-        statusText = "NO APROBADO (CON RECUP.)";
+    // Si ya aprobó o promocionó, no mostramos la condición previa (Libre/Regular)
+    if (status === "APROBADO" || status === "PROMOCIONADO") {
+      if (condBadge) condBadge.style.display = "none";
+    } else {
+      if (condBadge) condBadge.style.display = "inline-block";
     }
 
-    updateBadge(`badge-cond-${stepSuffix}`, condition, condType, condTooltip);
-    updateBadge(`badge-stat-${stepSuffix}`, statusText, statusType);
+    let condType = condition.includes("REGULAR") ? "success" : "danger";
+    if (condition.includes("RECUP")) condType = "warning";
+    
+    let statusText = status;
+    let finalStatusType = statusType;
+
+    if (condition.includes("RECUP") && status === "NO APROBADO") {
+      statusText = "NO APROBADO (CON RECUP.)";
+      finalStatusType = "warning";
+    }
+
+    updateBadge(`badge-cond-${stepSuffix}`, condition, condType);
+    updateBadge(`badge-stat-${stepSuffix}`, statusText, finalStatusType);
   };
 
   const showResult = (title, condition, description, type = "success") => {
     const titleEl = document.getElementById("result-title");
     const descEl = document.getElementById("result-description");
-
-    const labels = {
-      success: "APROBADO",
-      danger: "NO APROBADO",
-    };
+    const labels = { success: "APROBADO", danger: "NO APROBADO" };
 
     titleEl.innerText = title;
     descEl.innerHTML = description;
-    
     syncAllBadges("res", condition, labels[type], type);
     showStep("result");
   };
@@ -74,13 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return "P";
   };
 
-  const T_LIBRE = "Libre: No podés cursar ni rendir las materias de primer año hasta aprobar IECQ.";
-  const T_REGULAR = "Regular: Podés cursar las materias de primer año, pero NO rendirlas ni promocionarlas hasta aprobar IECQ.";
-  const T_APROBADO = "Aprobado: Podés cursar, promocionar y rendir las materias de primer año.";
+  const C_FINAL = "un 4 (14/26 respuestas correctas)";
+  const C_RECU_PROM = "un 6 (15/26 respuestas correctas, donde 4 equivale a 12/26)";
+  const C_RECU_REG = "6/13 respuestas correctas de la parte correspondiente";
 
-  const LIBRE_DEF = `• <strong class="has-tooltip" data-tooltip="${T_LIBRE}" style="color: #ef4444;">LIBRE: No podés cursar ni rendir</strong> las materias de primer año hasta aprobar IECQ.<br><em>(El examen final se aprueba con 4, que equivale a 14/26 correctas)</em>`;
-  const REGULAR_DEF = `• <strong class="has-tooltip" data-tooltip="${T_REGULAR}" style="color: #10b981;">REGULAR: Podés cursar</strong> las materias de primer año, pero <strong>NO rendirlas ni promocionarlas</strong> hasta aprobar IECQ.<br><em>(El examen final se aprueba con 4, que equivale a 14/26 correctas)</em>`;
-  const APROBADO_DEF = `• <strong class="has-tooltip" data-tooltip="${T_APROBADO}" style="color: #10b981;">APROBADO/PROMOCIÓN: Podés cursar, promocionar y rendir</strong> las materias de primer año.`;
+  const LIBRE_DEF = `• <strong style="color: #ef4444;">Condición Libre:</strong> No podés cursar ni rendir las materias de primer año hasta aprobar IECQ.<br><em>El examen final se aprueba con ${C_FINAL}.</em>`;
+  const REGULAR_DEF = `• <strong style="color: #10b981;">Condición Regular:</strong> Podés cursar las materias de primer año, pero NO rendirlas ni promocionarlas hasta aprobar IECQ.<br><em>El examen final se aprueba con ${C_FINAL}.</em>`;
+  const APROBADO_DEF = `• Podés cursar, promocionar y rendir las materias de primer año.<br><br><strong>¡Ya podés inscribirte a las materias de primer año!</strong>`;
 
   const typeSelect = document.getElementById("f1_type");
   const labelF1 = document.getElementById("label-f1");
@@ -89,20 +89,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const updateRegistrationInfo = () => {
     const isVisible = document.getElementById("field-type-f1").style.display !== "none";
+    const dangerIcon = `<span style="font-size: 1.2rem;">⚠️</span>`;
     
     if (!isVisible) {
-       // Si no hay selector, el alumno es LIBRE sin opción o REGULAR sin opción de recu.
-       // En estos casos rendirá FINAL, así que siempre mostramos el recordatorio.
-       regReminder.innerHTML = `<strong>Para rendir el examen final, tenés que inscribirte en SIU-Guaraní en las fechas indicadas.</strong>`;
-       regReminder.style.display = "block";
-       return;
+      regReminder.innerHTML = `${dangerIcon} <strong>Para rendir el primer examen final, tenés que inscribirte en SIU-Guaraní en las fechas indicadas.</strong>`;
+      regReminder.style.background = "#fef2f2";
+      regReminder.style.color = "#991b1b";
+      regReminder.style.borderLeftColor = "#ef4444";
+      regReminder.style.display = "flex";
+      return;
     }
 
     if (typeSelect.value === "final") {
-      regReminder.innerHTML = `<strong>Para rendir el examen final, tenés que inscribirte en SIU-Guaraní en las fechas indicadas.</strong>`;
-      regReminder.style.display = "block";
+      regReminder.innerHTML = `${dangerIcon} <strong>Para rendir el primer examen final, tenés que inscribirte en SIU-Guaraní en las fechas indicadas.</strong>`;
+      regReminder.style.background = "#fef2f2";
+      regReminder.style.color = "#991b1b";
+      regReminder.style.borderLeftColor = "#ef4444";
+      regReminder.style.display = "flex";
     } else {
       regReminder.innerHTML = `<em>El recuperatorio de promoción NO requiere inscripción previa.</em>`;
+      regReminder.style.background = "#f8fafc";
+      regReminder.style.color = "#475569";
+      regReminder.style.borderLeftColor = "#e2e8f0";
       regReminder.style.display = "block";
     }
   };
@@ -114,10 +122,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   typeSelect.addEventListener("change", () => {
-      const typeName = typeSelect.options[typeSelect.selectedIndex].text;
-      labelF1.innerText = `Nota obtenida en ${typeName}`;
-      toggleRecuRegVisibility();
-      updateRegistrationInfo();
+    const typeName = typeSelect.options[typeSelect.selectedIndex].text;
+    labelF1.innerText = `Nota obtenida en ${typeName}`;
+    toggleRecuRegVisibility();
+    updateRegistrationInfo();
   });
 
   document.getElementById("btn-calc-parciales").addEventListener("click", () => {
@@ -128,10 +136,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!hasAttendance) {
       studentState.condition = "LIBRE";
       syncAllBadges("f1", "LIBRE", "NO APROBADO", "danger");
-      document.getElementById("msg-f1").innerHTML = `<p>• <strong>LIBRE por asistencia (< 80%).</strong><br>${LIBRE_DEF}<br><br>Al no tener la asistencia mínima, <strong>NO podés recuperar la regularidad</strong>. Tu única opción es rendir el examen final completo.</p>`;
+      document.getElementById("msg-f1").innerHTML = `<p>Tu asistencia es inferior al 80%. En esta condición, no podés recuperar la regularidad mediante examen parcial.<br><br>${LIBRE_DEF}<br><br>Tu única opción es rendir el examen final completo.</p>`;
       document.getElementById("field-type-f1").style.display = "none";
       recuRegField.style.display = "none";
-      labelF1.innerText = "Nota obtenida en Examen Final";
+      labelF1.innerText = "Nota obtenida en el primer examen final";
       updateRegistrationInfo();
       showStep("final1");
       return;
@@ -147,34 +155,37 @@ document.addEventListener("DOMContentLoaded", () => {
     studentState.canRecoverRegularity = hasFourPlus;
 
     if (r1 !== "F" && r2 !== "F" && studentState.p1 >= 6 && studentState.p2 >= 6) {
-        showResult("PROMOCIONASTE", "REGULAR", `¡Excelente! Al promocionar IECQ,<br><br>${APROBADO_DEF}<br><br>No tenés que rendir examen final ni realizar más trámites de inscripción.`, "success");
-        return;
+      showResult("¡PROMOCIONASTE!", "REGULAR", `¡Excelente desempeño!<br><br>${APROBADO_DEF}`, "success");
+      return;
     }
 
     if (r1 === "F" || r2 === "F") {
-        studentState.failedPart = (r1 === "F") ? 1 : 2;
-        if (hasSixPlus) {
-            studentState.condition = "LIBRE (CON RECUP.)";
-            document.getElementById("msg-f1").innerHTML = `<p>Al tener un 6+, se te permite recuperar el parcial ${studentState.failedPart} para intentar <strong>recuperar la REGULARIDAD y la PROMOCIÓN</strong>.</p>`;
-        } else {
-            studentState.condition = "LIBRE";
-            let txt = `<p>${LIBRE_DEF}<br><br>`;
-            if (studentState.canRecoverRegularity) txt += `<strong>OPCIÓN EN EL 1er FINAL:</strong> Al tener al menos un 4+, podés intentar <strong>recuperar la regularidad</strong> aprobando la parte que debés (6 de 13 preguntas).<br><br>`;
-            else txt += `Al no tener al menos un parcial con nota 4 o más, <strong>NO podés recuperar la regularidad</strong>. Tu única opción es rendir el examen final completo.<br><br>`;
-            txt += `</p>`;
-            document.getElementById("msg-f1").innerHTML = txt;
-        }
-    } else {
-        studentState.condition = "REGULAR";
-        studentState.failedPart = (studentState.p1 < 6) ? 1 : (studentState.p2 < 6 ? 2 : 0);
-        let txt = `<p>${REGULAR_DEF}<br>`;
-        if (hasSixPlus) txt += `<br><strong>OPCIÓN:</strong> Tenés la posibilidad de rendir el <strong>Recuperatorio de promoción</strong> para intentar promocionar ya que tenés un 6+.</p>`;
+      studentState.failedPart = (r1 === "F") ? 1 : 2;
+      if (hasSixPlus) {
+        studentState.condition = "LIBRE (CON RECUP.)";
+        document.getElementById("msg-f1").innerHTML = `<p>Tenés dos opciones para tu primera fecha de examen:<br><br>
+        1. **Recuperatorio de promoción** del parcial ${studentState.failedPart}: para intentar recuperar la regularidad y la promoción (se aprueba con ${C_RECU_PROM}).<br>
+        2. **Examen Final Completo**: para intentar aprobar la materia (se aprueba con ${C_FINAL}) o recuperar la regularidad (se aprueba con ${C_RECU_REG}).</p>`;
+      } else {
+        studentState.condition = "LIBRE";
+        let txt = `<p>${LIBRE_DEF}<br><br>`;
+        if (studentState.canRecoverRegularity) txt += `<strong>Opción de Regularidad:</strong> Al tener al menos un 4+, en tu primera fecha de final podés intentar recuperar la regularidad aprobando con ${C_RECU_REG}.<br><br>`;
+        else txt += `Tu única opción es el examen final completo ya que no contás con parciales aprobados con 4 o más.`;
+        txt += `</p>`;
         document.getElementById("msg-f1").innerHTML = txt;
+      }
+    } else {
+      studentState.condition = "REGULAR";
+      studentState.failedPart = (studentState.p1 < 6) ? 1 : (studentState.p2 < 6 ? 2 : 0);
+      let txt = `<p>${REGULAR_DEF}<br>`;
+      if (hasSixPlus) txt += `<br><strong>Opcional:</strong> Tenés la posibilidad de rendir el recuperatorio de promoción (con ${C_RECU_PROM}) para promocionar.</p>`;
+      document.getElementById("msg-f1").innerHTML = txt;
     }
 
     syncAllBadges("f1", studentState.condition, "NO APROBADO", "danger");
+    document.getElementById("title-f1").innerText = studentState.canRecoverPromotion ? "Recuperatorio promoción o primer examen final" : "Primer examen final";
     document.getElementById("field-type-f1").style.display = studentState.canRecoverPromotion ? "block" : "none";
-    labelF1.innerText = studentState.canRecoverPromotion ? `Nota obtenida en ${typeSelect.options[typeSelect.selectedIndex].text}` : "Nota obtenida en Examen Final";
+    labelF1.innerText = studentState.canRecoverPromotion ? `Nota obtenida en ${typeSelect.options[typeSelect.selectedIndex].text}` : "Nota obtenida en el primer examen final";
     
     toggleRecuRegVisibility();
     updateRegistrationInfo();
@@ -188,30 +199,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const canRecoverProp = studentState.canRecoverPromotion;
     
     if (!canRecoverProp || examType === "final") {
-        if (nota1 >= 4) {
-             showResult("APROBASTE IECQ", studentState.condition.includes("REGULAR") ? "REGULAR" : "LIBRE", `Aprobaste el examen de IECQ (con un 4 o más, equivalente a 14/26+ correctas).<br><br>${APROBADO_DEF}<br><br><strong>Ya no tenés que inscribirte para otros finales de esta materia.</strong>`, "success");
-             return;
-        }
-        if (examType === "final" && recuperoReg) {
-            studentState.condition = "REGULAR";
-            document.getElementById("msg-f2").innerHTML = `<strong>Lograste recuperar la <span class="has-tooltip" data-tooltip="${T_REGULAR}" style="color: #10b981;">REGULARIDAD</span> (aprobaste la parte adeudada).</strong><br>No aprobaste el final completo. Te queda el segundo examen final.<br><br>${REGULAR_DEF}`;
-        } else {
-            document.getElementById("msg-f2").innerHTML = `No aprobaste el primer examen final ni recuperaste regularidad.<br><br>${studentState.condition.includes("REGULAR") ? REGULAR_DEF : LIBRE_DEF}`;
-        }
+      if (nota1 >= 4) {
+        showResult("¡APROBASTE!", studentState.condition.includes("REGULAR") ? "REGULAR" : "LIBRE", `Felicitaciones, aprobaste IECQ.<br><br>${APROBADO_DEF}`, "success");
+        return;
+      }
+      if (examType === "final" && recuperoReg) {
+        studentState.condition = "REGULAR";
+        document.getElementById("msg-f2").innerHTML = `<strong>¡Regularidad recuperada!</strong> Aprobaste con ${C_RECU_REG}. Te queda una instancia de examen final.<br><br>${REGULAR_DEF}`;
+      } else {
+        document.getElementById("msg-f2").innerHTML = `No lograste aprobar ni recuperar regularidad. Te queda el segundo examen final.<br><br>${studentState.condition.includes("REGULAR") ? REGULAR_DEF : LIBRE_DEF}`;
+      }
     } 
     else {
-        if (studentState.failedPart === 1) studentState.p1 = nota1; else studentState.p2 = nota1;
-        if (getRange(studentState.p1) === "P" && getRange(studentState.p2) === "P") {
-            showResult("PROMOCIONASTE", "REGULAR", `¡Excelente! Lograste la PROMOCIÓN.<br><br>${APROBADO_DEF}<br><br><strong>No tenés que realizar más trámites de inscripción.</strong>`, "success");
-            return;
-        }
-        if (getRange(studentState.p1) !== "F" && getRange(studentState.p2) !== "F") {
-            studentState.condition = "REGULAR";
-            document.getElementById("msg-f2").innerHTML = `No lograste promocionar, pero quedaste <strong class="has-tooltip" data-tooltip="${T_REGULAR}" style="color: #10b981;">REGULAR</strong>. Ahora podés rendir el final en el segundo examen final.<br><br>${REGULAR_DEF}`;
-        } else {
-            studentState.condition = "LIBRE";
-            document.getElementById("msg-f2").innerHTML = `No lograste la regularidad en el recuperatorio. Seguís <strong class="has-tooltip" data-tooltip="${T_LIBRE}" style="color: #ef4444;">LIBRE</strong>.<br><br>${LIBRE_DEF}`;
-        }
+      if (studentState.failedPart === 1) studentState.p1 = nota1; else studentState.p2 = nota1;
+      if (getRange(studentState.p1) === "P" && getRange(studentState.p2) === "P") {
+        showResult("¡PROMOCIONASTE!", "REGULAR", `Excelente desempeño. Lograste la promoción.<br><br>${APROBADO_DEF}`, "success");
+        return;
+      }
+      if (getRange(studentState.p1) !== "F" && getRange(studentState.p2) !== "F") {
+        studentState.condition = "REGULAR";
+        document.getElementById("msg-f2").innerHTML = `No lograste la promoción, pero ahora sos alumno regular. Podés rendir el segundo examen final.<br><br>${REGULAR_DEF}`;
+      } else {
+        studentState.condition = "LIBRE";
+        document.getElementById("msg-f2").innerHTML = `No lograste recuperar la regularidad. Seguís en condición de alumno libre.<br><br>${LIBRE_DEF}`;
+      }
     }
 
     syncAllBadges("f2", studentState.condition, "NO APROBADO", "danger");
@@ -222,9 +233,22 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-calc-final-2").addEventListener("click", () => {
     const nota2 = parseInt(document.getElementById("f2_val").value) || 0;
     if (nota2 >= 4) {
-      showResult("APROBASTE IECQ", studentState.condition, `Aprobaste el segundo examen final (con un 4 o más, equivalente a 14/26+ correctas).<br><br>${APROBADO_DEF}<br><br><strong>Ya no tenés que realizar más trámites de inscripción.</strong>`, "success");
+      showResult("¡APROBASTE!", studentState.condition, `Completaste la materia con éxito.<br><br>${APROBADO_DEF}`, "success");
     } else {
-      showResult("NO APROBADO", studentState.condition, `No aprobaste IECQ.<br><br>${studentState.condition.includes("REGULAR") ? REGULAR_DEF : LIBRE_DEF}`, "danger");
+      showResult("NO APROBADO", studentState.condition, `No lograste aprobar la materia en esta instancia final.<br><br>${studentState.condition.includes("REGULAR") ? REGULAR_DEF : LIBRE_DEF}`, "danger");
     }
+  });
+
+  // Validation: Only allow integers between 0 and 10
+  document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', (e) => {
+      let val = e.target.value;
+      if (val !== "") {
+        let n = Math.floor(Number(val));
+        if (n < 0) n = 0;
+        if (n > 10) n = 10;
+        if (val != n) e.target.value = n;
+      }
+    });
   });
 });

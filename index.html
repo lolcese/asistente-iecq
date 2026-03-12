@@ -45,11 +45,11 @@
               </div>
               <div class="field">
                 <label for="p1">Parcial 1</label>
-                <input type="number" id="p1" min="0" max="10" placeholder="Nota 0-10 (0=Ausente)">
+                <input type="number" id="p1" min="0" max="10" step="1" placeholder="Nota 0-10 (0=Ausente)">
               </div>
               <div class="field">
                 <label for="p2">Parcial 2</label>
-                <input type="number" id="p2" min="0" max="10" placeholder="Nota 0-10 (0=Ausente)">
+                <input type="number" id="p2" min="0" max="10" step="1" placeholder="Nota 0-10 (0=Ausente)">
               </div>
             </div>
 
@@ -66,7 +66,7 @@
             </div>
             <h2 id="title-f1">Primer examen final</h2>
             <p id="msg-f1" class="result-box-small"></p>
-            <div id="reg-reminder-f1" class="result-box-small" style="display: none; border-left: 4px solid var(--warning); background: #fffbeb;"></div>
+            <div id="reg-reminder-f1" class="result-box-small" style="display: none; border-left: 4px solid #ef4444; background: #fef2f2; color: #991b1b; display: flex; align-items: center; gap: 10px;"></div>
             
             <div id="inputs-f1">
                 <div class="field" id="field-type-f1" style="display: none;">
@@ -78,10 +78,10 @@
                 </div>
                 <div class="field">
                     <label id="label-f1" for="f1_val">Nota obtenida</label>
-                    <input type="number" id="f1_val" min="0" max="10" placeholder="Nota 0-10 (0=Ausente)">
+                    <input type="number" id="f1_val" min="0" max="10" step="1" placeholder="Nota 0-10 (0=Ausente)">
                 </div>
                 <div class="field" id="field-recu-reg" style="display: none;">
-                    <label>¿Aprobaste la parte adeudada (6/13 preguntas)?</label>
+                    <label>¿Aprobaste la parte adeudada (6/13 respuestas correctas de la parte correspondiente)?</label>
                     <select id="f1_recu_reg">
                         <option value="no">No</option>
                         <option value="si">Sí</option>
@@ -103,7 +103,7 @@
             
             <div class="field">
                 <label id="label-f2" for="f2_val">Nota del examen final</label>
-                <input type="number" id="f2_val" min="0" max="10" placeholder="Nota 0-10 (0=Ausente)">
+                <input type="number" id="f2_val" min="0" max="10" step="1" placeholder="Nota 0-10 (0=Ausente)">
             </div>
             
             <button id="btn-calc-final-2" class="primary-btn">Cargar Nota</button>
